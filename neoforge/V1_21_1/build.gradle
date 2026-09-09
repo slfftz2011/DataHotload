@@ -13,7 +13,7 @@ dependencies {
 }
 
 neoForge {
-    version = neoforge_version
+    version = neoForgeVersion
 
     runs {
         client {
