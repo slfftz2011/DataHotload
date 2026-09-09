@@ -11,17 +11,7 @@ package com.slfftz.datahotload.core.server;
  * </ul>
  */
 public interface DatapackReloader {
-
-    /**
-     * Trigger a full datapack reload using the vanilla mechanism.
-     *
-     * @return the result of the reload operation
-     */
-    ReloadResult reload();
-
-    /**
-     * Get the name of the datapack that most recently changed (for error reporting).
-     * May return "unknown" if multiple packs changed or the name cannot be determined.
-     */
-    String getLastChangedDatapackName();
+    CompletableFuture<Void> reloadAllDatapacks();
+    boolean isAvailable();
 }
+
