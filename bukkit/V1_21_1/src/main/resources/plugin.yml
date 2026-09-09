@@ -10,3 +10,5 @@ commands:
     usage: /datahotload reload
     aliases: [dhl]
     permission: datahotload.admin
+channels:
+  - slfftz:datahotload

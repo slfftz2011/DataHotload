@@ -44,7 +44,7 @@ public class BukkitNetworkHandler implements NetworkHandler<Player> {
 
     @Override
     public void sendToPlayer(Player player, DataHotloadPayload payload) {
-        byte[] data = payload.encode();
+        byte[] data = encodeWithVarIntPrefix(payload);
         try {
             player.sendPluginMessage(plugin, DataHotloadConstants.CHANNEL_ID, data);
         } catch (Exception e) {
@@ -57,7 +57,7 @@ public class BukkitNetworkHandler implements NetworkHandler<Player> {
 
     @Override
     public void sendToAllPlayers(DataHotloadPayload payload) {
-        byte[] data = payload.encode();
+        byte[] data = encodeWithVarIntPrefix(payload);
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             try {
                 player.sendPluginMessage(plugin, DataHotloadConstants.CHANNEL_ID, data);
@@ -66,6 +66,33 @@ public class BukkitNetworkHandler implements NetworkHandler<Player> {
                         "[DataHotload] Failed to send payload to " + player.getName(), e);
             }
         }
+    }
+
+    /**
+     * Encodes the payload with a VarInt length prefix so that the wire format
+     * matches the Fabric/NeoForge {@code PacketCodec}/{@code StreamCodec}
+     * expectation (varint length + raw bytes).
+     */
+    private static byte[] encodeWithVarIntPrefix(DataHotloadPayload payload) {
+        byte[] body = payload.encode();
+        byte[] prefix = encodeVarInt(body.length);
+        byte[] result = new byte[prefix.length + body.length];
+        System.arraycopy(prefix, 0, result, 0, prefix.length);
+        System.arraycopy(body, 0, result, prefix.length, body.length);
+        return result;
+    }
+
+    private static byte[] encodeVarInt(int value) {
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream(5);
+        while (true) {
+            if ((value & ~0x7F) == 0) {
+                out.write(value);
+                break;
+            }
+            out.write((value & 0x7F) | 0x80);
+            value >>>= 7;
+        }
+        return out.toByteArray();
     }
 
     /**
