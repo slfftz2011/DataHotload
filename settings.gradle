@@ -1,11 +1,28 @@
 pluginManagement {
+    plugins {
+        id "net.neoforged.moddev" version "2.0.146"
+    }
     repositories {
         maven { url = 'https://maven.fabricmc.net/' }
         maven { url = 'https://maven.neoforged.net/releases' }
+        maven { url = 'https://maven.neoforged.net/snapshots' }
         gradlePluginPortal()
         mavenCentral()
     }
 }
+
+rootProject.name = 'datahotload'
+
+include 'core'
+include 'fabric:V1_21_1'
+project(':fabric:V1_21_1').projectDir = file('fabric/V1_21_1')
+
+include 'neoforge:V1_21_1'
+project(':neoforge:V1_21_1').projectDir = file('neoforge/V1_21_1')
+
+include 'bukkit:V1_21_1'
+project(':bukkit:V1_21_1').projectDir = file('bukkit/V1_21_1')
+
 
 rootProject.name = 'datahotload'
 
