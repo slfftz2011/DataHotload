@@ -1,0 +1,45 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+repositories {
+    // PaperMC repository (paper-api)
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    // SpigotMC repository (spigot-api, alternative reference)
+    maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    mavenCentral()
+}
+
+dependencies {
+    // Paper API (1.21.1) - compileOnly, provided by the server at runtime.
+    // Paper API is a superset of the Bukkit/Spigot API.
+    compileOnly 'io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT'
+
+    // Core module - shaded into the final plugin jar.
+    // Bukkit does not support modular classloading for libraries the way
+    // Fabric/NeoForge do, so core classes must be bundled into the plugin jar.
+    implementation project(':core')
+}
+
+// The shadowJar task produces the deployable fat jar containing both the
+// Bukkit adapter classes and the core classes.
+shadowJar {
+    archiveClassifier.set('')
+    // No relocations needed: packages are already namespaced under com.slfftz.
+}
+
+// Make `build` depend on the shadowed jar so `gradlew build` produces the
+// artifact that should be dropped into the server's plugins/ folder.
+build {
+    dependsOn tasks.named('shadowJar')
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}

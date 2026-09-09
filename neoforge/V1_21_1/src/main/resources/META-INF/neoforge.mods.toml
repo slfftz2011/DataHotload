@@ -1,0 +1,29 @@
+# NeoForge Mod Metadata
+# This file is processed by Gradle's ProcessResources to inject version placeholders
+
+modLoader = "javafml"
+loaderVersion = "[21.1,)"
+license = "MIT"
+
+[[mods]]
+modId = "${modId}"
+version = "${version}"
+displayName = "${displayName}"
+description = '''${description}'''
+authors = "slfftz"
+displayURL = ""
+
+# Dependencies
+[[dependencies.${modId}]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${modId}]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.22)"
+ordering = "NONE"
+side = "BOTH"

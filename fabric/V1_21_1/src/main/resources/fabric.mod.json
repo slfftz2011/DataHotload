@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "datahotload",
+  "version": "1.0.0",
+  "name": "DataHotload",
+  "description": "Hot-reload datapacks without restarting the server. Watches the world datapacks directory and automatically reloads on file changes, with client-side error reporting.",
+  "authors": [
+    "slfftz"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/datahotload/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.slfftz.datahotload.fabric.DataHotloadFabric"
+    ],
+    "client": [
+      "com.slfftz.datahotload.fabric.client.DataHotloadFabricClient"
+    ],
+    "server": [
+      "com.slfftz.datahotload.fabric.server.DataHotloadFabricServer"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.5",
+    "fabric-api": "*",
+    "minecraft": "~1.21.1",
+    "java": ">=21"
+  }
+}

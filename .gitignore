@@ -1,0 +1,31 @@
+# Gradle
+.gradle/
+build/
+out/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Run
+run/
+logs/
+
+# Fabric
+remappedSrc/
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# NeoForge
+run/
+logs/

@@ -1,0 +1,77 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-all:
+    name: Build All Loaders
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build Core
+        run: ./gradlew :core:build --no-daemon
+
+      - name: Build Fabric 1.21.1
+        run: ./gradlew :fabric:V1_21_1:build --no-daemon
+
+      - name: Build NeoForge 1.21.1
+        run: ./gradlew :neoforge:V1_21_1:build --no-daemon
+
+      - name: Build Bukkit/Paper 1.21
+        run: ./gradlew :bukkit:V1_21_1:build --no-daemon
+
+      - name: Collect Release Jars
+        run: |
+          mkdir -p release-artifacts
+          find . -path "*/build/libs/*.jar" \
+            ! -name "*-sources.jar" \
+            ! -name "*-dev.jar" \
+            ! -name "*-shadow.jar" \
+            -exec cp {} release-artifacts/ \;
+          ls -la release-artifacts/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: DataHotload ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            release-artifacts/*.jar
+          body: |
+            ## DataHotload ${{ github.ref_name }}
+
+            ### Supported Loaders
+            - **Fabric** 1.21.1
+            - **NeoForge** 1.21.1
+            - **Bukkit/Paper** 1.21
+
+            ### Features
+            - 🔄 Automatic datapack change detection and reload
+            - 📡 Error reporting to clients via custom network payloads
+            - 🖥️ Client-server separated architecture
+
+            ### Installation
+            - Fabric: Place jar in `mods/` folder (requires Fabric API)
+            - NeoForge: Place jar in `mods/` folder
+            - Bukkit/Paper: Place jar in `plugins/` folder
+
+            ### Notes
+            - Client GUI error display is planned (not yet implemented)
+            - Error analysis and translation is planned (not yet implemented)
+            - Forge support is planned (placeholder directory exists)

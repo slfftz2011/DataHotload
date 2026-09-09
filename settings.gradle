@@ -1,0 +1,19 @@
+rootProject.name = 'datahotload'
+
+include 'core'
+
+// Fabric
+include 'fabric:V1_21_1'
+project(':fabric:V1_21_1').projectDir = file('fabric/V1_21_1')
+
+// NeoForge
+include 'neoforge:V1_21_1'
+project(':neoforge:V1_21_1').projectDir = file('neoforge/V1_21_1')
+
+// Bukkit
+include 'bukkit:V1_21_1'
+project(':bukkit:V1_21_1').projectDir = file('bukkit/V1_21_1')
+
+// Forge (placeholder, not included in build yet)
+// include 'forge:V1_21_1'
+// project(':forge:V1_21_1').projectDir = file('forge/V1_21_1')

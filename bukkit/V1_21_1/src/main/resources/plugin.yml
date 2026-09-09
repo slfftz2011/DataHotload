@@ -1,0 +1,12 @@
+name: DataHotload
+version: 1.0.0
+main: com.slfftz.datahotload.bukkit.DataHotloadBukkit
+api-version: '1.21'
+author: slfftz
+description: Automatic datapack reload with error reporting
+commands:
+  datahotload:
+    description: DataHotload management commands
+    usage: /datahotload reload
+    aliases: [dhl]
+    permission: datahotload.admin
