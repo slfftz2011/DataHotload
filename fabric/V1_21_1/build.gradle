@@ -1,10 +1,10 @@
 plugins {
-    id 'fabric-loom' version '1.9-SNAPSHOT'
+    id 'fabric-loom' version "${fabric_loom_version}"
     id 'java'
 }
 
 base {
-    archivesName = "datahotload-fabric-${project.minecraft_version}"
+    archivesName = "datahotload-fabric-${fabric_minecraft_version}"
 }
 
 repositories {
@@ -14,14 +14,14 @@ repositories {
 
 dependencies {
     // Minecraft
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    minecraft "com.mojang:minecraft:${fabric_minecraft_version}"
+    mappings "net.fabricmc:yarn:${fabric_yarn_mappings}:v2"
 
     // Fabric Loader
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
 
     // Fabric API
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
 
     // Core module (loader-agnostic business logic)
     implementation project(':core')
@@ -34,4 +34,19 @@ java {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.release = 21
+}
+
+// Expand placeholders in fabric.mod.json during processResources
+tasks.named('processResources', ProcessResources).configure {
+    var replaceProperties = [
+            mod_id         : mod_id,
+            mod_name       : mod_name,
+            mod_description: mod_description,
+            mod_version    : mod_version
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['fabric.mod.json']) {
+        expand replaceProperties + [project: project]
+    }
 }

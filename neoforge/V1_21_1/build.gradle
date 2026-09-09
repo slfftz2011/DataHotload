@@ -1,9 +1,7 @@
 plugins {
-    id 'net.neoforged.gradle.userdev' version '7.0.150'
+    id 'net.neoforged.gradle.userdev' version "${neoforge_gradle_plugin_version}"
     id 'java'
 }
-
-// NeoForge and Minecraft versions are defined in gradle.properties
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -15,7 +13,7 @@ dependencies {
 }
 
 neoForge {
-    version = project.neoForgeVersion
+    version = neoforge_version
 
     runs {
         client {
@@ -37,12 +35,12 @@ tasks.withType(JavaCompile).configureEach {
 // Expand placeholders in neoforge.mods.toml during processResources
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
-            modId             : project.modId,
-            version           : project.version,
-            displayName       : project.displayName,
-            description       : project.description,
-            neoForgeVersion   : project.neoForgeVersion,
-            minecraftVersion  : project.minecraftVersion
+            modId             : mod_id,
+            version           : mod_version,
+            displayName       : mod_name,
+            description       : mod_description,
+            neoForgeVersion   : neoforge_version,
+            minecraftVersion  : neoforge_minecraft_version
     ]
     inputs.properties replaceProperties
 
