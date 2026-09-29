@@ -18,7 +18,7 @@ public class FabricDatapackReloader implements DatapackReloader {
     @Override
     public CompletableFuture<Void> reloadAllDatapacks() {
         try {
-            WorldDataConfiguration config = server.getSaveProperties().getDataConfiguration();
+            DataConfiguration config = server.getSaveProperties().getDataConfiguration();
             Collection<String> enabled = config.getEnabled();
 
             // MinecraftServer#reloadResources(Collection<String>) -> returns CompletableFuture<?>
