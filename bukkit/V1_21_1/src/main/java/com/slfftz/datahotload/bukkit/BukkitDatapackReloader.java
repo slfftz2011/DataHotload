@@ -41,8 +41,10 @@ public class BukkitDatapackReloader implements DatapackReloader {
         this.lastChangedDatapackName = (name != null && !name.isBlank()) ? name : "unknown";
     }
 
-    @Override
-    public ReloadResult doReload() {
+    /**
+     * 同步执行 datapack reload 的实际逻辑（私有方法，非接口方法）。
+     */
+    private ReloadResult doReload() {
         long start = System.currentTimeMillis();
         String name = lastChangedDatapackName;
         try {
@@ -58,7 +60,6 @@ public class BukkitDatapackReloader implements DatapackReloader {
                 return ReloadResult.failure(name, t2, System.currentTimeMillis() - start);
             }
         } catch (Throwable t) {
-            // reloadDataPack() threw -> reload genuinely failed
             plugin.getLogger().severe("[DataHotload] Datapack reload failed: " + t.getMessage());
             return ReloadResult.failure(name, t, System.currentTimeMillis() - start);
         }
@@ -83,19 +84,6 @@ public class BukkitDatapackReloader implements DatapackReloader {
 
     /**
      * Fallback: reflectively call {@code MinecraftServer#reloadResources(...)}.
-     * <p>
-     * NOTE: NMS internals changed across 1.20.5+ (Mojang-mapped/modern mappings).
-     * This fallback is best-effort; on a genuine Paper 1.21.1 server the
-     * {@link #tryBukkitApiReload()} path should always succeed, so this code
-     * is only exercised on Spigot forks.
-     * <p>
-     * TODO: Verify the exact {@code reloadResources} signature against the
-     * runtime version. On 1.21.1 the expected shape is:
-     * <pre>
-     *   CompletableFuture&lt;ReloadableServerResources&gt; reloadResources(
-     *       Collection&lt;PackSelectionConfig&gt;, Collection&lt;PackSelectionConfig&gt;,
-     *       Executor, Executor)
-     * </pre>
      */
     private void tryNmsReload() throws Exception {
         Object craftServer = Bukkit.getServer();
@@ -120,15 +108,15 @@ public class BukkitDatapackReloader implements DatapackReloader {
         future.join();
     }
 
+    // ---- DatapackReloader 接口实现 ----
+
     @Override
-    public CompletableFuture<Void> reload() {
-        return CompletableFuture.runAsync(() -> {
-            doReload();
-        });
+    public CompletableFuture<Void> reloadAllDatapacks() {
+        return CompletableFuture.runAsync(this::doReload);
     }
-    
+
     @Override
-    public boolean isAavailable() {
+    public boolean isAvailable() {
         return Bukkit.getServer() != null;
     }
 
