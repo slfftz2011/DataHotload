@@ -75,24 +75,21 @@ public class DataHotloadNeoForge {
      * "register this payload type + codec + client-side handler".
      */
     private void registerPayloads(RegisterPayloadHandlersEvent event) {
-        // Register as a play-to-client payload: server sends, client receives.
-        // The handler receives the payload and forwards it to NeoForgeClient.
-        event.playToClient(
-                NeoForgePayload.TYPE,
-                NeoForgePayload.STREAM_CODEC,
-                (payload, context) -> {
-                    // context.enqueueWork ensures we run on the client main thread
-                    context.enqueueWork(() -> {
-                        if (FMLEnvironment.dist == Dist.CLIENT) {
-                            NeoForgeClient.getInstance().onPayloadReceived(payload);
-                        }
-                    });
-                }
-        );
+    PayloadRegistrar registrar = event.registrar(DataHotloadConstants.CHANNEL_VERSION);
 
-        System.out.println("[DataHotload] Payload handler registered: " +
-                DataHotloadConstants.CHANNEL_ID);
-    }
+    registrar.playToClient(
+            NeoForgePayload.TYPE,
+            NeoForgePayload.STREAM_CODEC,
+            (payload, context) -> {
+                context.enqueueWork(() -> {
+                    if (FMLEnvironment.dist == Dist.CLIENT) {
+                        NeoForgeClient.getInstance().onPayloadReceived(payload);
+                    }
+                });
+            }
+    );
+}
+
 
     // ========================================================================
     // Server Lifecycle
