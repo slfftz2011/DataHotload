@@ -1,36 +1,39 @@
 package com.slfftz.datahotload.neoforge.network;
 
-import com.slfftz.datahotload.core.common.DataHotloadConstants;
 import com.slfftz.datahotload.core.common.network.DataHotloadPayload;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import com.slfftz.datahotload.core.common.network.NetworkHandler;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 
-public record NeoForgePayload(DataHotloadPayload inner) implements CustomPacketPayload {
+public class NeoForgeNetworkHandler implements NetworkHandler<ServerPlayer> {
 
-    public static final CustomPacketPayload.Type<NeoForgePayload> TYPE =
-            new CustomPacketPayload.Type<>(
-                    ResourceLocation.tryBuild(
-                            DataHotloadConstants.CHANNEL_NAMESPACE,
-                            DataHotloadConstants.CHANNEL_PATH
-                    )
-            );
+    private final MinecraftServer server;
 
-    public static final StreamCodec<FriendlyByteBuf, NeoForgePayload> STREAM_CODEC =
-            StreamCodec.composite(
-                    ByteBufCodecs.BYTE_ARRAY,
-                    NeoForgePayload::innerBytes,
-                    NeoForgePayload::new
-            );
-
-    private byte[] innerBytes() {
-        return inner.encode();
+    public NeoForgeNetworkHandler(MinecraftServer server) {
+        this.server = server;
     }
 
     @Override
-    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
-        return TYPE;
+    public void sendToPlayer(ServerPlayer player, DataHotloadPayload payload) {
+        player.connection.send(
+                new ClientboundCustomPayloadPacket(new NeoForgePayload(payload))
+        );
+    }
+
+    @Override
+    public void sendToAllPlayers(DataHotloadPayload payload) {
+        ClientboundCustomPayloadPacket packet =
+                new ClientboundCustomPayloadPacket(new NeoForgePayload(payload));
+
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            player.connection.send(packet);
+        }
+    }
+
+    @Override
+    public void register() {
+        // Payload type + codec + handler are registered in
+        // DataHotloadNeoForge#registerPayloads during mod construction.
     }
 }
