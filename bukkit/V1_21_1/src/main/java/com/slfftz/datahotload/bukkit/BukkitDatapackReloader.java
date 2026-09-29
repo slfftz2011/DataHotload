@@ -37,10 +37,6 @@ public class BukkitDatapackReloader implements DatapackReloader {
         this.plugin = plugin;
     }
 
-    public void setLastChangedDatapackName(String name) {
-        this.lastChangedDatapackName = (name != null && !name.isBlank()) ? name : "unknown";
-    }
-
     /**
      * 同步执行 datapack reload 的实际逻辑（私有方法，非接口方法）。
      */
