@@ -116,9 +116,9 @@ public class BukkitDatapackReloader implements DatapackReloader {
         return Bukkit.getServer() != null;
     }
 
-    @Override
-    public String getLastChangedDatapackName() {
-        return lastChangedDatapackName;
+   
+    public void setLastChangedDatapackName(String name) {
+        this.lastChangedDatapackName = (name != null && !name.isBlank()) ? name : "unknown";
     }
 
     /** Thrown internally when the Bukkit static reload API is not present on this server. */
