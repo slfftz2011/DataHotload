@@ -2,7 +2,6 @@ package com.slfftz.datahotload.neoforge.server;
 
 import com.slfftz.datahotload.core.server.DatapackReloader;
 import com.slfftz.datahotload.core.server.ReloadResult;
-import net.minecraft.Util;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.ArrayList;
@@ -20,19 +19,13 @@ public class NeoForgeDatapackReloader implements DatapackReloader {
 
     @Override
     public CompletableFuture<Void> reloadAllDatapacks() {
-        long start = System.currentTimeMillis();
         try {
             var packRepository = server.getPackRepository();
             List<String> selectedIds = new ArrayList<>(packRepository.getSelectedIds());
 
-            CompletableFuture<?> future = server.reloadResources(
-                    selectedIds,
-                    selectedIds,
-                    Util.backgroundExecutor(),
-                    server
-            );
+            CompletableFuture<?> future = server.reloadResources(selectedIds);
 
-            return future.thenAccept(v -> {
+            return future.thenRun(() -> {
             }).exceptionally(ex -> {
                 throw new RuntimeException(ex);
             });
