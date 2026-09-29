@@ -3,12 +3,13 @@ package com.slfftz.datahotload.neoforge.network;
 import com.slfftz.datahotload.core.common.DataHotloadConstants;
 import com.slfftz.datahotload.core.common.network.DataHotloadPayload;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPayload;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * NeoForge-wrapped {@link CustomPayload} that carries a core {@link DataHotloadPayload}.
+ * NeoForge-wrapped {@link CustomPacketPayload} that carries a core {@link DataHotloadPayload}.
  * <p>
  * Serialization delegates to the core payload's own binary format via
  * {@link DataHotloadPayload#encode()} and {@link DataHotloadPayload#decode(byte[])}.
@@ -16,16 +17,16 @@ import net.minecraft.resources.ResourceLocation;
  * <p>
  * Channel ID: {@value DataHotloadConstants#CHANNEL_ID}
  */
-public record NeoForgePayload(DataHotloadPayload inner) implements CustomPayload {
+public record NeoForgePayload(DataHotloadPayload inner) implements CustomPacketPayload {
 
     /** Payload type identifier registered with NeoForge's networking system. */
-    public static final Type<NeoForgePayload> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(
-                    DataHotloadConstants.CHANNEL_NAMESPACE,
-                    DataHotloadConstants.CHANNEL_PATH
-            ),
-            STREAM_CODEC
-    );
+    public static final CustomPacketPayload.Type<NeoForgePayload> TYPE =
+            new CustomPacketPayload.Type<>(
+                    ResourceLocation.tryBuild(
+                            DataHotloadConstants.CHANNEL_NAMESPACE,
+                            DataHotloadConstants.CHANNEL_PATH
+                    )
+            );
 
     /**
      * Stream codec for encoding/decoding this payload on the network buffer.
@@ -36,26 +37,18 @@ public record NeoForgePayload(DataHotloadPayload inner) implements CustomPayload
      * {@link DataHotloadPayload#decode(byte[])}.
      */
     public static final StreamCodec<FriendlyByteBuf, NeoForgePayload> STREAM_CODEC =
-            StreamCodec.of(
-                    NeoForgePayload::encode,
-                    NeoForgePayload::decode
+            StreamCodec.composite(
+                    ByteBufCodecs.BYTE_ARRAY,
+                    NeoForgePayload::innerBytes,
+                    NeoForgePayload::new
             );
 
-    private static void encode(FriendlyByteBuf buf, NeoForgePayload payload) {
-        byte[] data = payload.inner().encode();
-        buf.writeVarInt(data.length);
-        buf.writeBytes(data);
-    }
-
-    private static NeoForgePayload decode(FriendlyByteBuf buf) {
-        int length = buf.readVarInt();
-        byte[] data = new byte[length];
-        buf.readBytes(data);
-        return new NeoForgePayload(DataHotloadPayload.decode(data));
+    private byte[] innerBytes() {
+        return inner.encode();
     }
 
     @Override
-    public Type<? extends CustomPayload> type() {
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
 }
