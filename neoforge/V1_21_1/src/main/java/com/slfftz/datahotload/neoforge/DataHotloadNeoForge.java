@@ -11,6 +11,7 @@ import com.slfftz.datahotload.neoforge.server.NeoForgeDatapackReloader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelResource;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -75,7 +76,7 @@ public class DataHotloadNeoForge {
      * "register this payload type + codec + client-side handler".
      */
     private void registerPayloads(RegisterPayloadHandlersEvent event) {
-    PayloadRegistrar registrar = event.registrar(DataHotloadConstants.CHANNEL_VERSION);
+    PayloadRegistrar registrar = event.registrar("1");
 
     registrar.playToClient(
             NeoForgePayload.TYPE,
@@ -89,6 +90,7 @@ public class DataHotloadNeoForge {
             }
     );
 }
+
 
 
     // ========================================================================
