@@ -36,16 +36,18 @@ public record NeoForgePayload(DataHotloadPayload inner) implements CustomPacketP
      * Decoding: reads the varint length, then the bytes, and calls
      * {@link DataHotloadPayload#decode(byte[])}.
      */
-    public static final StreamCodec<FriendlyByteBuf, NeoForgePayload> STREAM_CODEC =
-            StreamCodec.composite(
-                    ByteBufCodecs.BYTE_ARRAY,
-                    NeoForgePayload::innerBytes,
-                    NeoForgePayload::new
-            );
+    public static final StreamCodec<FriendlyByteBuf, NeoForgePayload> STREAM_CODEC = new StreamCodec<>() {
+        @Override
+        public void encode(FriendlyByteBuf buf, NeoForgePayload payload) {
+            ByteBufCodecs.BYTE_ARRAY.encode(buf, payload.inner.encode());
+        }
 
-    private byte[] innerBytes() {
-        return inner.encode();
-    }
+        @Override
+        public NeoForgePayload decode(FriendlyByteBuf buf) {
+            byte[] data = ByteBufCodecs.BYTE_ARRAY.decode(buf);
+            return new NeoForgePayload(DataHotloadPayload.decode(data));
+        }
+    };
 
     @Override
     public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
