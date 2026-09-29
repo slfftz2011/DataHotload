@@ -42,7 +42,7 @@ public class BukkitDatapackReloader implements DatapackReloader {
     }
 
     @Override
-    public ReloadResult reload() {
+    public ReloadResult doReload() {
         long start = System.currentTimeMillis();
         String name = lastChangedDatapackName;
         try {
@@ -118,6 +118,18 @@ public class BukkitDatapackReloader implements DatapackReloader {
         // Block until the (async) reload completes so timing/error reporting
         // in ReloadResult is accurate.
         future.join();
+    }
+
+    @Override
+    public CompletableFuture<Void> reload() {
+        return CompletableFuture.runAsync(() -> {
+            doReload();
+        });
+    }
+    
+    @Override
+    public boolean isAavailable() {
+        return Bukkit.getServer() != null;
     }
 
     @Override
