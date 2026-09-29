@@ -35,6 +35,11 @@ public class NeoForgeDatapackReloader implements DatapackReloader {
     }
 
     @Override
+    public boolean isAvailable() {
+        return server != null && server.isRunning();
+    }
+
+    @Override
     public ReloadResult reload() {
         long start = System.currentTimeMillis();
         String datapackName = this.lastChangedDatapackName;
