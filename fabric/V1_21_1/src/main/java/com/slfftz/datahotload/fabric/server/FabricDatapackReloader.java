@@ -2,7 +2,7 @@ package com.slfftz.datahotload.fabric.server;
 
 import com.slfftz.datahotload.core.server.DatapackReloader;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.DataPackConfig;
+import net.minecraft.world.level.DataPackSettings;
 
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
@@ -17,8 +17,8 @@ public class FabricDatapackReloader implements DatapackReloader {
 
     @Override
     public CompletableFuture<Void> reloadAllDatapacks() {
-        DataPackConfig config = server.getWorldData().getDataPackConfig();
-        Collection<String> enabled = config.getEnabled();
+        DataPackSettings settings = server.getSaveProperties().getDataPackSettings();
+        Collection<String> enabled = settings.enabled();
 
         return server.reloadResources(enabled).thenApply(r -> null);
     }
