@@ -2,7 +2,7 @@ package com.slfftz.datahotload.fabric.server;
 
 import com.slfftz.datahotload.core.server.DatapackReloader;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.storage.WorldDataConfiguration;
+import net.minecraft.world.level.storage.DataConfiguration;
 
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
