@@ -23,7 +23,10 @@ public record DataHotloadPayloadS2C(DataHotloadPayload payload) implements Custo
      * Matches {@link com.slfftz.datahotload.core.common.DataHotloadConstants#CHANNEL_ID}.
      */
     public static final CustomPayload.Id<DataHotloadPayloadS2C> ID =
-            new CustomPayload.Id<>(Identifier.of("slfftz", "datahotload"));
+            new CustomPayload.Id<>(new Identifier(
+                    DataHotloadConstants.CHANNEL_NAMESPACE,
+                    DataHotloadConstants.CHANNEL_PATH
+            ));
 
     /**
      * Stream codec for encoding/decoding this payload on the network buffer.
@@ -43,7 +46,6 @@ public record DataHotloadPayloadS2C(DataHotloadPayload payload) implements Custo
                 return new DataHotloadPayloadS2C(DataHotloadPayload.decode(data));
             }
     );
-
     @Override
     public CustomPayload.Id<? extends CustomPayload> getId() {
         return ID;

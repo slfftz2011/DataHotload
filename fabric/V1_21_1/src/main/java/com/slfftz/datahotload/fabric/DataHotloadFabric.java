@@ -16,7 +16,13 @@ public class DataHotloadFabric implements ModInitializer {
     public void onInitialize() {
         // Register the S2C payload type so the client can decode incoming packets.
         // The client receiver is registered separately in DataHotloadFabricClient.
-        PayloadTypeRegistry.playS2C().register(DataHotloadPayloadS2C.ID, DataHotloadPayloadS2C.CODEC);
+        try {
+            PayloadTypeRegistry.playS2C().register(DataHotloadPayloadS2C.ID, DataHotloadPayloadS2C.CODEC);
+            System.out.println("[DataHotload] Registered S2C payload codec");
+        } catch (Throwable t) {
+            System.err.println("[DataHotload] Failed to register S2C payload codec: " + t);
+            t.printStackTrace();
+        }
         System.out.println("[DataHotload] Fabric main entry point initialized");
     }
 }
