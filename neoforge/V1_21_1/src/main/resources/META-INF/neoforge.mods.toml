@@ -2,7 +2,7 @@
 # This file is processed by Gradle's ProcessResources to inject version placeholders
 
 modLoader = "javafml"
-loaderVersion = "[21.1,)"
+loaderVersion = "[4,)"
 license = "MIT"
 
 [[mods]]

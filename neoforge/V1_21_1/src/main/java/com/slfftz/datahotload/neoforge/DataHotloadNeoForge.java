@@ -7,10 +7,12 @@ import com.slfftz.datahotload.neoforge.client.NeoForgeClient;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelResource;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
 import java.nio.file.Path;
 
@@ -24,12 +26,12 @@ public class DataHotloadNeoForge {
     private ServerEntryPoint<ServerPlayer> serverEntryPoint;
 
     public DataHotloadNeoForge() {
-        // Register lifecycle listeners on the Forge event bus
-        net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
-        net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(this::onServerStopping);
+        // Register lifecycle listeners on the NeoForge game event bus
+        NeoForge.EVENT_BUS.addListener(this::onServerStarting);
+        NeoForge.EVENT_BUS.addListener(this::onServerStopping);
 
         // Client-only initialization
-        if (FMLEnvironment.dist == FMLEnvironment.Dist.CLIENT) {
+        if (FMLEnvironment.dist == Dist.CLIENT) {
             initializeClient();
         }
 
