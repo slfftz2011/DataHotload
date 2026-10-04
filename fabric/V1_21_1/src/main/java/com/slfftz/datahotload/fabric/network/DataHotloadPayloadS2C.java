@@ -24,7 +24,7 @@ public record DataHotloadPayloadS2C(DataHotloadPayload payload) implements Custo
      * Matches {@link com.slfftz.datahotload.core.common.DataHotloadConstants#CHANNEL_ID}.
      */
     public static final CustomPayload.Id<DataHotloadPayloadS2C> ID =
-            new CustomPayload.Id<>(new Identifier(
+            new CustomPayload.Id<>(Identifier.of(
                     DataHotloadConstants.CHANNEL_NAMESPACE,
                     DataHotloadConstants.CHANNEL_PATH
             ));
