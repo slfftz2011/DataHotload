@@ -1,11 +1,9 @@
 package com.slfftz.datahotload.neoforge.server;
 
 import com.slfftz.datahotload.core.server.DatapackReloader;
-import com.slfftz.datahotload.core.server.ReloadResult;
 import net.minecraft.server.MinecraftServer;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 public class NeoForgeDatapackReloader implements DatapackReloader {
@@ -19,21 +17,34 @@ public class NeoForgeDatapackReloader implements DatapackReloader {
 
     @Override
     public CompletableFuture<Void> reloadAllDatapacks() {
+        // Submit the reload to the server thread, refresh the pack repository
+        // so newly added datapack folders are picked up, and keep the currently
+        // enabled packs selected (mirrors Fabric's scanPacks + setEnabledProfiles).
+        CompletableFuture<Void> future = new CompletableFuture<>();
         try {
-            var packRepository = server.getPackRepository();
-            List<String> selectedIds = new ArrayList<>(packRepository.getSelectedIds());
+            server.execute(() -> {
+                try {
+                    var packRepository = server.getPackRepository();
+                    Collection<String> enabled = packRepository.getSelectedIds();
 
-            CompletableFuture<?> future = server.reloadResources(selectedIds);
+                    packRepository.reload();
+                    packRepository.setSelected(enabled);
 
-            return future.thenRun(() -> {
-            }).exceptionally(ex -> {
-                throw new RuntimeException(ex);
+                    server.reloadResources(enabled).whenComplete((v, t) -> {
+                        if (t == null) {
+                            future.complete(null);
+                        } else {
+                            future.completeExceptionally(t);
+                        }
+                    });
+                } catch (Throwable t) {
+                    future.completeExceptionally(t);
+                }
             });
-        } catch (Exception e) {
-            CompletableFuture<Void> failed = new CompletableFuture<>();
-            failed.completeExceptionally(e);
-            return failed;
+        } catch (Throwable t) {
+            future.completeExceptionally(t);
         }
+        return future;
     }
 
     @Override
