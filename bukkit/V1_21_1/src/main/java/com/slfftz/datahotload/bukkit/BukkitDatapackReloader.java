@@ -65,15 +65,18 @@ public class BukkitDatapackReloader implements DatapackReloader {
     public CompletableFuture<Void> reloadAllDatapacks() {
         final CompletableFuture<Void> future = new CompletableFuture<>();
         try {
-            // Schedule synchronous reload on the main server thread
-            Bukkit.getScheduler().callSyncMethod(plugin, () -> {
-                ReloadResult result = doReload();
-                if (result.isSuccess()) {
-                    future.complete(null);
-                } else {
-                    future.completeExceptionally(new RuntimeException(result.getErrorMessage()));
+            // Schedule synchronous reload on the main server thread using runTask
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                try {
+                    ReloadResult result = doReload();
+                    if (result.isSuccess()) {
+                        future.complete(null);
+                    } else {
+                        future.completeExceptionally(new RuntimeException(result.getErrorMessage()));
+                    }
+                } catch (Throwable t) {
+                    future.completeExceptionally(t);
                 }
-                return null;
             });
         } catch (Throwable t) {
             future.completeExceptionally(t);
@@ -105,6 +108,40 @@ public class BukkitDatapackReloader implements DatapackReloader {
         Object craftServer = Bukkit.getServer();
         Method getServer = craftServer.getClass().getMethod("getServer");
         Object minecraftServer = getServer.invoke(craftServer);
-        // existing reflection logic continues (unchanged)
+
+        Method reload = minecraftServer.getClass().getMethod(
+                "reloadResources",
+                Collection.class, Collection.class,
+                java.util.concurrent.Executor.class,
+                java.util.concurrent.Executor.class);
+
+        @SuppressWarnings("unchecked")
+        CompletableFuture<Object> future = (CompletableFuture<Object>) reload.invoke(
+                minecraftServer,
+                Collections.emptyList(), Collections.emptyList(),
+                (java.util.concurrent.Executor) CompletableFuture::runAsync,
+                minecraftServer);
+
+        // Block until the (async) reload completes so timing/error reporting
+        // in ReloadResult is accurate.
+        future.join();
+    }
+
+    // ---- DatapackReloader 接口实现 ----
+
+    @Override
+    public boolean isAvailable() {
+        return Bukkit.getServer() != null;
+    }
+
+    public void setLastChangedDatapackName(String name) {
+        this.lastChangedDatapackName = (name != null && !name.isBlank()) ? name : "unknown";
+    }
+
+    /** Thrown internally when the Bukkit static reload API is not present on this server. */
+    private static final class BukkitApiUnavailableException extends Exception {
+        BukkitApiUnavailableException(Throwable cause) {
+            super(cause);
+        }
     }
 }
