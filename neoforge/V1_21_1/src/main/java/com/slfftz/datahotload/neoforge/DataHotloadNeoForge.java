@@ -20,6 +20,9 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.file.Path;
 
 /**
@@ -29,6 +32,8 @@ import java.nio.file.Path;
  */
 @Mod("datahotload")
 public class DataHotloadNeoForge {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataHotloadNeoForge.class);
 
     private MinecraftServer minecraftServer;
     private ServerEntryPoint<ServerPlayer> serverEntryPoint;
@@ -48,7 +53,7 @@ public class DataHotloadNeoForge {
             initializeClient();
         }
 
-        System.out.println("[DataHotload] NeoForge mod constructed");
+        LOGGER.info("[DataHotload] NeoForge mod constructed");
     }
 
     private void onServerStarting(ServerStartingEvent event) {
@@ -63,7 +68,7 @@ public class DataHotloadNeoForge {
         serverEntryPoint = new ServerEntryPoint<>(worldDir, reloader, networkHandler);
         serverEntryPoint.start();
 
-        System.out.println("[DataHotload] NeoForge server entry point initialized for world: " + worldDir);
+        LOGGER.info("[DataHotload] NeoForge server entry point initialized for world: " + worldDir);
     }
 
     /**
@@ -79,7 +84,7 @@ public class DataHotloadNeoForge {
                 NeoForgePayload.STREAM_CODEC,
                 this::handleClientPayload
         );
-        System.out.println("[DataHotload] Registered NeoForge S2C payload");
+        LOGGER.info("[DataHotload] Registered NeoForge S2C payload");
     }
 
     /**
@@ -98,12 +103,12 @@ public class DataHotloadNeoForge {
             serverEntryPoint = null;
         }
         minecraftServer = null;
-        System.out.println("[DataHotload] NeoForge server entry point stopped");
+        LOGGER.info("[DataHotload] NeoForge server entry point stopped");
     }
 
     private void initializeClient() {
         NeoForgeClient.getInstance();
-        System.out.println("[DataHotload] NeoForge client initialized");
+        LOGGER.info("[DataHotload] NeoForge client initialized");
     }
 
     public ServerEntryPoint<ServerPlayer> getServerEntryPoint() {

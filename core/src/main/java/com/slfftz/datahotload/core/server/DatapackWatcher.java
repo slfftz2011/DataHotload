@@ -2,6 +2,9 @@ package com.slfftz.datahotload.core.server;
 
 import com.slfftz.datahotload.core.common.DataHotloadConstants;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.*;
              import java.nio.file.attribute.BasicFileAttributes;
@@ -20,6 +23,8 @@ import java.util.function.Consumer;
       * during rapid file operations (e.g., extracting a zip).
       */
      public class DatapackWatcher implements AutoCloseable {
+
+         private static final Logger LOGGER = LoggerFactory.getLogger(DatapackWatcher.class);
 
          private final Path datapacksDir;
          private final Consumer<String> changeCallback;
@@ -60,7 +65,7 @@ import java.util.function.Consumer;
              watchThread.setDaemon(true);
              watchThread.start();
 
-             System.out.println("[DataHotload] Watching datapacks directory: " + datapacksDir);
+             LOGGER.info("[DataHotload] Watching datapacks directory: " + datapacksDir);
          }
 
          private void registerAll(final Path start) throws IOException {

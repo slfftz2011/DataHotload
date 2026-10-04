@@ -3,6 +3,9 @@ package com.slfftz.datahotload.core.server;
 import com.slfftz.datahotload.core.common.network.DataHotloadPayload;
 import com.slfftz.datahotload.core.common.network.NetworkHandler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +20,8 @@ import java.util.List;
  * @param <P> the loader-specific player type
  */
 public class ServerEntryPoint<P> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServerEntryPoint.class);
 
     private final DatapackWatcher watcher;
     private final DatapackReloader reloader;
@@ -37,10 +42,9 @@ public class ServerEntryPoint<P> {
         try {
             networkHandler.register();
             watcher.start();
-            System.out.println("[DataHotload] Server entry point started");
+            LOGGER.info("[DataHotload] Server entry point started");
         } catch (Exception e) {
-            System.err.println("[DataHotload] Failed to start server entry point: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("[DataHotload] Failed to start server entry point: " + e.getMessage(), e);
         }
     }
 
@@ -49,31 +53,31 @@ public class ServerEntryPoint<P> {
      */
     public void stop() {
         watcher.close();
-        System.out.println("[DataHotload] Server entry point stopped");
+        LOGGER.info("[DataHotload] Server entry point stopped");
     }
 
     /**
      * Called by the watcher when a datapack change is detected (after debounce).
      */
     private void onDatapackChanged(String datapackName) {
-        System.out.println("[DataHotload] Datapack change detected: " + datapackName + ", triggering reload...");
+        LOGGER.info("[DataHotload] Datapack change detected: " + datapackName + ", triggering reload...");
 
         try {
             reloader.reloadAllDatapacks()
                     .whenComplete((v, t) -> {
                         long duration = 0; // 如果需要可以由 ReloadResult 填充或记录时间
                         if (t == null) {
-                            System.out.println("[DataHotload] Reload succeeded");
+                            LOGGER.info("[DataHotload] Reload succeeded");
                         } else {
                             Throwable cause = t instanceof java.util.concurrent.CompletionException ? t.getCause() : t;
-                            System.err.println("[DataHotload] Reload failed: " + cause.getMessage());
+                            LOGGER.error("[DataHotload] Reload failed: " + cause.getMessage(), cause);
                             // 构造 ReloadResult.failure 并广播
                             ReloadResult result = ReloadResult.failure(datapackName, cause, duration);
                             broadcastError(result);
                         }
                     });
         } catch (Exception e) {
-            System.err.println("[DataHotload] Failed to start reload: " + e.getMessage());
+            LOGGER.error("[DataHotload] Failed to start reload: " + e.getMessage(), e);
             broadcastError(ReloadResult.failure(datapackName, e, 0));
         }
     }

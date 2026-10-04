@@ -6,6 +6,9 @@ import com.slfftz.datahotload.core.common.api.GuiRenderer;
 import com.slfftz.datahotload.core.common.network.DataHotloadPayload;
 import com.slfftz.datahotload.neoforge.network.NeoForgePayload;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Client-side entry point for DataHotload on NeoForge.
  * <p>
@@ -19,6 +22,8 @@ import com.slfftz.datahotload.neoforge.network.NeoForgePayload;
  */
 public class NeoForgeClient {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(NeoForgeClient.class);
+
     private static NeoForgeClient INSTANCE;
 
     private final ClientEntryPoint clientEntryPoint;
@@ -28,12 +33,12 @@ public class NeoForgeClient {
         GuiRenderer<?> guiRenderer = new GuiRenderer<Object>() {
             @Override
             public void showNotification(DataHotloadPayload payload) {
-                System.out.println("[DataHotload-Client] Notification: " + payload.getErrorMessage());
+                LOGGER.info("[DataHotload-Client] Notification: " + payload.getErrorMessage());
             }
 
             @Override
             public void openErrorScreen(DataHotloadPayload payload) {
-                System.out.println("[DataHotload-Client] Error screen (TODO): " + payload.getErrorMessage());
+                LOGGER.info("[DataHotload-Client] Error screen (TODO): " + payload.getErrorMessage());
             }
 
             @Override

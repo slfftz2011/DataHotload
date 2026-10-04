@@ -1,5 +1,8 @@
 package com.slfftz.datahotload.core.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -15,6 +18,8 @@ import java.nio.file.Path;
  */
 public final class WorldLocator {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorldLocator.class);
+
     private WorldLocator() {}
 
     public static Path resolveWorldDir(Path runDir) {
@@ -27,22 +32,22 @@ public final class WorldLocator {
             try (DirectoryStream<Path> ds = Files.newDirectoryStream(saves)) {
                 for (Path candidate : ds) {
                     if (Files.isDirectory(candidate) && Files.exists(candidate.resolve("level.dat"))) {
-                        System.out.println("[DataHotload] Resolved world dir from saves: " + candidate);
+                        LOGGER.info("[DataHotload] Resolved world dir from saves: " + candidate);
                         return candidate;
                     }
                 }
             } catch (IOException e) {
-                System.err.println("[DataHotload] Error scanning saves directory: " + e.getMessage());
+                LOGGER.error("[DataHotload] Error scanning saves directory: " + e.getMessage(), e);
             }
         }
 
         Path world = runDir.resolve("world");
         if (Files.isDirectory(world)) {
-            System.out.println("[DataHotload] Resolved world dir: " + world);
+            LOGGER.info("[DataHotload] Resolved world dir: " + world);
             return world;
         }
 
-        System.out.println("[DataHotload] Falling back to run directory as world dir: " + runDir);
+        LOGGER.info("[DataHotload] Falling back to run directory as world dir: " + runDir);
         return runDir;
     }
 }

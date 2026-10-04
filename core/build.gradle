@@ -9,4 +9,6 @@ java {
 
 dependencies {
     // Core has no loader dependencies - pure Java
+    // SLF4J API only at compile time; the runtime implementation is provided by the loader (Log4j bridge)
+    compileOnly 'org.slf4j:slf4j-api:2.0.9'
 }

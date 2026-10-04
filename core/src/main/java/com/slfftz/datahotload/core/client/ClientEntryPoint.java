@@ -4,6 +4,9 @@ import com.slfftz.datahotload.core.common.network.DataHotloadPayload;
 import com.slfftz.datahotload.core.common.api.GuiRenderer;
 import com.slfftz.datahotload.core.common.api.ErrorAnalyzer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Client-side lifecycle manager.
  * <p>
@@ -12,6 +15,8 @@ import com.slfftz.datahotload.core.common.api.ErrorAnalyzer;
  * and call {@link #onPayloadReceived(DataHotloadPayload)} when a packet arrives.
  */
 public class ClientEntryPoint {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClientEntryPoint.class);
 
     private final GuiRenderer<?> guiRenderer;
     private final ErrorAnalyzer errorAnalyzer;
@@ -27,10 +32,10 @@ public class ClientEntryPoint {
     public void onPayloadReceived(DataHotloadPayload payload) {
         // TODO: Implement full GUI rendering
         // For now, log the received error
-        System.out.println("[DataHotload] Received datapack error from server:");
-        System.out.println("  Datapack: " + payload.getDatapackName());
-        System.out.println("  Severity: " + payload.getSeverity());
-        System.out.println("  Message:  " + payload.getErrorMessage());
+        LOGGER.info("[DataHotload] Received datapack error from server:");
+        LOGGER.info("  Datapack: " + payload.getDatapackName());
+        LOGGER.info("  Severity: " + payload.getSeverity());
+        LOGGER.info("  Message:  " + payload.getErrorMessage());
 
         if (guiRenderer != null) {
             guiRenderer.onPayloadReceived(payload);
