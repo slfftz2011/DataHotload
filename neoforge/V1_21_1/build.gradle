@@ -3,6 +3,10 @@ plugins {
     id 'java'
 }
 
+base {
+    archivesName = "datahotload-neoforge-${neoforge_minecraft_version}"
+}
+
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(21)
 }
@@ -37,8 +41,8 @@ tasks.named('processResources', ProcessResources).configure {
             version           : mod_version,
             displayName       : mod_name,
             description       : mod_description,
-            neoForgeVersion   : neoForgeVersion,
-            minecraftVersion  : minecraftVersion
+            neoForgeVersion   : neoforge_version
+            minecraftVersion  : neoforge_minecraft_version
     ]
     inputs.properties replaceProperties
 
