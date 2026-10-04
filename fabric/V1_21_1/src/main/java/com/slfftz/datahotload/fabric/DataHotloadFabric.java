@@ -1,5 +1,3 @@
-// name=fabric/V1_21_1/src/main/java/com/slfftz/datahotload/fabric/DataHotloadFabric.java
-// url=https://github.com/slfftz2011/DataHotload/blob/main/fabric/V1_21_1/src/main/java/com/slfftz/datahotload/fabric/DataHotloadFabric.java
 package com.slfftz.datahotload.fabric;
 
 import com.slfftz.datahotload.core.server.ServerEntryPoint;
