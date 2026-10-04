@@ -1,6 +1,7 @@
 package com.slfftz.datahotload.fabric.network;
 
 import com.slfftz.datahotload.core.common.network.DataHotloadPayload;
+import com.slfftz.datahotload.core.common.DataHotloadConstants;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
