@@ -16,7 +16,7 @@ dependencies {
 }
 
 neoForge {
-    version = neoForgeVersion
+    version = neoforge_version
 
     runs {
         client {
@@ -41,7 +41,7 @@ tasks.named('processResources', ProcessResources).configure {
             version           : mod_version,
             displayName       : mod_name,
             description       : mod_description,
-            neoForgeVersion   : neoforge_version
+            neoForgeVersion   : neoforge_version,
             minecraftVersion  : neoforge_minecraft_version
     ]
     inputs.properties replaceProperties

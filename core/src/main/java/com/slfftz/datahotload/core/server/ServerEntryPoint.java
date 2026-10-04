@@ -58,13 +58,23 @@ public class ServerEntryPoint<P> {
     private void onDatapackChanged(String datapackName) {
         System.out.println("[DataHotload] Datapack change detected: " + datapackName + ", triggering reload...");
 
-        ReloadResult result = reloader.reload();
-
-        if (result.isSuccess()) {
-            System.out.println("[DataHotload] Reload succeeded in " + result.getDurationMs() + "ms");
-        } else {
-            System.err.println("[DataHotload] Reload failed: " + result.getErrorMessage());
-            broadcastError(result);
+        try {
+            reloader.reloadAllDatapacks()
+                    .whenComplete((v, t) -> {
+                        long duration = 0; // 如果需要可以由 ReloadResult 填充或记录时间
+                        if (t == null) {
+                            System.out.println("[DataHotload] Reload succeeded");
+                        } else {
+                            Throwable cause = t instanceof java.util.concurrent.CompletionException ? t.getCause() : t;
+                            System.err.println("[DataHotload] Reload failed: " + cause.getMessage());
+                            // 构造 ReloadResult.failure 并广播
+                            ReloadResult result = ReloadResult.failure(datapackName, cause, duration);
+                            broadcastError(result);
+                        }
+                    });
+        } catch (Exception e) {
+            System.err.println("[DataHotload] Failed to start reload: " + e.getMessage());
+            broadcastError(ReloadResult.failure(datapackName, e, 0));
         }
     }
 

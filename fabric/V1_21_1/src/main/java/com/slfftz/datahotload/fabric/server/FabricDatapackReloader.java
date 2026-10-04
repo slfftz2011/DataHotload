@@ -16,22 +16,25 @@ public class FabricDatapackReloader implements DatapackReloader {
 
     @Override
     public CompletableFuture<Void> reloadAllDatapacks() {
+        // 如果 MinecraftServer 有 submit/callable 提交方法，使用它；否则使用 execute 并手动完成 future。
+        CompletableFuture<Void> future = new CompletableFuture<>();
         try {
-            // Yarn: ResourcePackManager (原 PackRepository) 直接提供 getEnabledIds()
-            Collection<String> enabled = server.getDataPackManager().getEnabledIds();
+            server.execute(() -> {
+                try {
+                    Collection<String> enabled = server.getDataPackManager().getEnabledIds();
+                    server.getDataPackManager().scanPacks();
+                    server.getDataPackManager().setEnabledProfiles(enabled);
 
-            // 重新扫描数据包目录，使新加入/修改的数据包生效
-            server.getDataPackManager().scanPacks();
-
-            // 恢复启用列表（scanPacks 后会重置状态，需要重新 apply）
-            server.getDataPackManager().setEnabledProfiles(enabled);
-
-            return CompletableFuture.completedFuture(null);
-        } catch (Exception e) {
-            CompletableFuture<Void> failed = new CompletableFuture<>();
-            failed.completeExceptionally(e);
-            return failed;
+                    server.reloadResources(enabled);
+                    future.complete(null);
+                } catch (Throwable t) {
+                    future.completeExceptionally(t);
+                }
+            });
+        } catch (Throwable t) {
+            future.completeExceptionally(t);
         }
+        return future;
     }
 
     @Override
