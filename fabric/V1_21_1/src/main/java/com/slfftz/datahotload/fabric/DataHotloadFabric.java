@@ -12,14 +12,11 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
  */
 public class DataHotloadFabric implements ModInitializer {
 
-    static {
+    @Override
+    public void onInitialize() {
         // Register the S2C payload type so the client can decode incoming packets.
         // The client receiver is registered separately in DataHotloadFabricClient.
         PayloadTypeRegistry.playS2C().register(DataHotloadPayloadS2C.ID, DataHotloadPayloadS2C.CODEC);
-    }
-
-    @Override
-    public void onInitialize() {
         System.out.println("[DataHotload] Fabric main entry point initialized");
     }
 }
