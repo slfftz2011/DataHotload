@@ -6,6 +6,8 @@ import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.network.ServerPlayerEntity;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -27,13 +29,14 @@ public class DataHotloadFabricServer implements DedicatedServerModInitializer {
         this.networkHandler = new FabricNetworkHandler();
 
         // Register server lifecycle events
+        // 只展示关键修改片段 —— 放到 fabric/V1_21_1/src/main/java/.../DataHotloadFabricServer.java
+
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             // Inject the server reference into the network handler
             networkHandler.setServer(server);
 
-            // Resolve the world directory: <runDir>/world
-            // TODO: Use server.getSavePath() or level storage API to support custom world names
-            Path worldDir = server.getRunDirectory().resolve("world");
+            // Resolve the world directory intelligently:
+            Path worldDir = resolveWorldDir(server.getRunDirectory());
 
             // Create the datapack reloader backed by vanilla reloadResources
             reloader = new FabricDatapackReloader(server);
@@ -68,5 +71,33 @@ public class DataHotloadFabricServer implements DedicatedServerModInitializer {
      */
     public FabricDatapackReloader getReloader() {
         return reloader;
+    }
+
+    private Path resolveWorldDir(Path runDir) {
+        // 1) Check for run/saves/<dir-with-level.dat> (common for integrated singleplayer)
+        Path saves = runDir.resolve("saves");
+        if (Files.exists(saves) && Files.isDirectory(saves)) {
+            try (java.nio.file.DirectoryStream<Path> ds = Files.newDirectoryStream(saves)) {
+                for (Path candidate : ds) {
+                    if (Files.isDirectory(candidate) && Files.exists(candidate.resolve("level.dat"))) {
+                        System.out.println("[DataHotload] Resolved world dir from saves: " + candidate);
+                        return candidate;
+                    }
+                }
+            } catch (IOException e) {
+                // ignore and fall back
+            }
+        }
+
+        // 2) Fallback to run/world (dedicated server default)
+        Path world = runDir.resolve("world");
+        if (Files.exists(world) && Files.isDirectory(world)) {
+            System.out.println("[DataHotload] Resolved world dir: " + world);
+            return world;
+        }
+
+        // 3) Final fallback: runDir itself
+        System.out.println("[DataHotload] Falling back to run directory as world dir: " + runDir);
+        return runDir;
     }
 }
