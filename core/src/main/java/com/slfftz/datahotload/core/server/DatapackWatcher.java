@@ -4,6 +4,9 @@ import com.slfftz.datahotload.core.common.DataHotloadConstants;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -26,6 +29,9 @@ public class DatapackWatcher implements AutoCloseable {
     private final AtomicLong lastEventTime = new AtomicLong(0);
     private volatile String lastChangedName = "unknown";
 
+    // Map watch keys back to the registered directory path so we can resolve events
+    private final Map<WatchKey, Path> keyToDir = new ConcurrentHashMap<>();
+
     /**
      * @param datapacksDir   the path to the world's datapacks directory
      * @param changeCallback called with the changed datapack name when a debounced change occurs
@@ -44,10 +50,10 @@ public class DatapackWatcher implements AutoCloseable {
         }
 
         this.watchService = FileSystems.getDefault().newWatchService();
-        datapacksDir.register(watchService,
-                StandardWatchEventKinds.ENTRY_CREATE,
-                StandardWatchEventKinds.ENTRY_MODIFY,
-                StandardWatchEventKinds.ENTRY_DELETE);
+
+        // Register the datapacks dir and all existing subdirectories so we observe
+        // changes inside unpacked datapacks as well.
+        registerAll(datapacksDir);
 
         running.set(true);
         watchThread = new Thread(this::watchLoop, "datahotload-watcher");
@@ -55,6 +61,30 @@ public class DatapackWatcher implements AutoCloseable {
         watchThread.start();
 
         System.out.println("[DataHotload] Watching datapacks directory: " + datapacksDir);
+    }
+
+    private void registerAll(final Path start) throws IOException {
+        Files.walkFileTree(start, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                registerDir(dir);
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
+    private void registerDir(Path dir) throws IOException {
+        if (watchService == null) return;
+        try {
+            WatchKey key = dir.register(watchService,
+                    StandardWatchEventKinds.ENTRY_CREATE,
+                    StandardWatchEventKinds.ENTRY_MODIFY,
+                    StandardWatchEventKinds.ENTRY_DELETE);
+            keyToDir.put(key, dir);
+        } catch (IOException e) {
+            // bubble up
+            throw e;
+        }
     }
 
     private void watchLoop() {
@@ -67,6 +97,13 @@ public class DatapackWatcher implements AutoCloseable {
                 break;
             }
 
+            Path dir = keyToDir.get(key);
+            if (dir == null) {
+                // Unknown key, skip
+                key.reset();
+                continue;
+            }
+
             for (WatchEvent<?> event : key.pollEvents()) {
                 WatchEvent.Kind<?> kind = event.kind();
                 if (kind == StandardWatchEventKinds.OVERFLOW) {
@@ -75,14 +112,24 @@ public class DatapackWatcher implements AutoCloseable {
 
                 @SuppressWarnings("unchecked")
                 WatchEvent<Path> pathEvent = (WatchEvent<Path>) event;
-                Path changed = pathEvent.context();
+                Path changedRel = pathEvent.context();
+                Path changed = dir.resolve(changedRel);
                 String name = changed.getFileName().toString();
 
                 // Only react to .zip files and directories (datapacks)
                 boolean isZip = name.endsWith(".zip");
-                boolean isDir = Files.isDirectory(datapacksDir.resolve(changed));
+                boolean isDir = Files.isDirectory(changed);
                 if (!isZip && !isDir && kind != StandardWatchEventKinds.ENTRY_DELETE) {
                     continue;
+                }
+
+                // If a new directory was created, register it so we watch its children
+                if (kind == StandardWatchEventKinds.ENTRY_CREATE && isDir) {
+                    try {
+                        registerAll(changed);
+                    } catch (IOException ignored) {
+                        // non-fatal: continue watching other events
+                    }
                 }
 
                 lastChangedName = name;
@@ -94,7 +141,9 @@ public class DatapackWatcher implements AutoCloseable {
 
             boolean valid = key.reset();
             if (!valid) {
-                break;
+                keyToDir.remove(key);
+                // If no more keys, possibly exit
+                if (keyToDir.isEmpty()) break;
             }
         }
     }
@@ -130,13 +179,6 @@ public class DatapackWatcher implements AutoCloseable {
         if (watchThread != null) {
             watchThread.interrupt();
         }
-    }
-
-    public String getLastChangedName() {
-        return lastChangedName;
-    }
-
-    public boolean isRunning() {
-        return running.get();
+        keyToDir.clear();
     }
 }
