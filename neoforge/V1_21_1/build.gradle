@@ -18,6 +18,12 @@ dependencies {
 neoForge {
     version = neoforge_version
 
+    mods {
+        datahotload {
+            sourceSet sourceSets.main
+        }
+    }
+
     runs {
         client {
             client()

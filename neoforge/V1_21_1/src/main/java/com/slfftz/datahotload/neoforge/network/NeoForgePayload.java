@@ -7,6 +7,9 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 /**
  * NeoForge-wrapped {@link CustomPacketPayload} that carries a core {@link DataHotloadPayload}.
@@ -22,10 +25,10 @@ public record NeoForgePayload(DataHotloadPayload inner) implements CustomPacketP
     /** Payload type identifier registered with NeoForge's networking system. */
     public static final CustomPacketPayload.Type<NeoForgePayload> TYPE =
             new CustomPacketPayload.Type<>(
-                    ResourceLocation.tryBuild(
+                    Objects.requireNonNull(ResourceLocation.tryBuild(
                             DataHotloadConstants.CHANNEL_NAMESPACE,
                             DataHotloadConstants.CHANNEL_PATH
-                    )
+                    ))
             );
 
     /**
@@ -38,19 +41,19 @@ public record NeoForgePayload(DataHotloadPayload inner) implements CustomPacketP
      */
     public static final StreamCodec<FriendlyByteBuf, NeoForgePayload> STREAM_CODEC = new StreamCodec<>() {
         @Override
-        public void encode(FriendlyByteBuf buf, NeoForgePayload payload) {
+        public void encode(@NotNull FriendlyByteBuf buf, NeoForgePayload payload) {
             ByteBufCodecs.BYTE_ARRAY.encode(buf, payload.inner.encode());
         }
 
         @Override
-        public NeoForgePayload decode(FriendlyByteBuf buf) {
+        public @NotNull NeoForgePayload decode(@NotNull FriendlyByteBuf buf) {
             byte[] data = ByteBufCodecs.BYTE_ARRAY.decode(buf);
             return new NeoForgePayload(DataHotloadPayload.decode(data));
         }
     };
 
     @Override
-    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
+    public CustomPacketPayload.@NotNull Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
 }

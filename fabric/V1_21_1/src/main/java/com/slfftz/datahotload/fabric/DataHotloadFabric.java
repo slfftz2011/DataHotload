@@ -1,5 +1,6 @@
 package com.slfftz.datahotload.fabric;
 
+import com.slfftz.datahotload.core.common.DataHotloadConstants;
 import com.slfftz.datahotload.core.server.ServerEntryPoint;
 import com.slfftz.datahotload.fabric.network.DataHotloadPayloadS2C;
 import com.slfftz.datahotload.fabric.network.FabricNetworkHandler;
@@ -8,6 +9,8 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -20,6 +23,8 @@ import java.nio.file.*;
  */
 public class DataHotloadFabric implements ModInitializer {
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(DataHotloadConstants.MOD_NAME);
+
     // Keep references so we can stop the entry point on shutdown
     private ServerEntryPoint<ServerPlayerEntity> serverEntryPoint;
     private FabricNetworkHandler networkHandler;
@@ -31,9 +36,9 @@ public class DataHotloadFabric implements ModInitializer {
         // Register the S2C payload type so the client can decode incoming packets.
         try {
             PayloadTypeRegistry.playS2C().register(DataHotloadPayloadS2C.ID, DataHotloadPayloadS2C.CODEC);
-            System.out.println("[DataHotload] Registered S2C payload codec");
+            LOGGER.info("Registered S2C payload codec");
         } catch (Throwable t) {
-            System.err.println("[DataHotload] Failed to register S2C payload codec: " + t);
+            LOGGER.info("Failed to register S2C payload codec: {}", String.valueOf(t));
             t.printStackTrace();
         }
 
@@ -51,8 +56,7 @@ public class DataHotloadFabric implements ModInitializer {
             this.serverEntryPoint = new ServerEntryPoint<>(worldDir, reloader, networkHandler);
             this.serverEntryPoint.start();
 
-            System.out.println("[DataHotload] Fabric server entry point started, watching: "
-                    + worldDir.resolve("datapacks"));
+            LOGGER.info("Fabric server entry point started, watching: {}", worldDir.resolve("datapacks"));
         });
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
@@ -60,16 +64,16 @@ public class DataHotloadFabric implements ModInitializer {
                 try {
                     this.serverEntryPoint.stop();
                 } catch (Throwable t) {
-                    System.err.println("[DataHotload] Error stopping server entry point: " + t);
+                    LOGGER.info("Error stopping server entry point: {}", String.valueOf(t));
                     t.printStackTrace();
                 } finally {
                     this.serverEntryPoint = null;
                 }
             }
-            System.out.println("[DataHotload] Fabric server entry point stopped");
+            LOGGER.info("Fabric server entry point stopped");
         });
 
-        System.out.println("[DataHotload] Fabric main entry point initialized");
+        LOGGER.info("Fabric main entry point initialized");
     }
 
     /**
@@ -85,22 +89,22 @@ public class DataHotloadFabric implements ModInitializer {
             try (DirectoryStream<Path> ds = Files.newDirectoryStream(saves)) {
                 for (Path candidate : ds) {
                     if (Files.isDirectory(candidate) && Files.exists(candidate.resolve("level.dat"))) {
-                        System.out.println("[DataHotload] Resolved world dir from saves: " + candidate);
+                        LOGGER.info("Resolved world dir from saves: {}", candidate);
                         return candidate;
                     }
                 }
             } catch (IOException e) {
-                System.err.println("[DataHotload] Error scanning saves directory: " + e.getMessage());
+                LOGGER.info("Error scanning saves directory: {}", e.getMessage());
             }
         }
 
         Path world = runDir.resolve("world");
         if (Files.isDirectory(world)) {
-            System.out.println("[DataHotload] Resolved world dir: " + world);
+            LOGGER.info("Resolved world dir: {}", world);
             return world;
         }
 
-        System.out.println("[DataHotload] Falling back to run directory as world dir: " + runDir);
+        LOGGER.info("Falling back to run directory as world dir: {}", runDir);
         return runDir;
     }
 }

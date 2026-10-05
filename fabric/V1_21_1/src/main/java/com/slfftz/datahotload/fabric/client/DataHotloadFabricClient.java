@@ -2,6 +2,7 @@ package com.slfftz.datahotload.fabric.client;
 
 import com.slfftz.datahotload.core.client.ClientEntryPoint;
 import com.slfftz.datahotload.core.common.api.ErrorAnalyzer;
+import com.slfftz.datahotload.fabric.DataHotloadFabric;
 import com.slfftz.datahotload.fabric.network.DataHotloadPayloadS2C;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -37,7 +38,7 @@ public class DataHotloadFabricClient implements ClientModInitializer {
                 }
         );
 
-        System.out.println("[DataHotload] Fabric client entry point initialized");
+        DataHotloadFabric.LOGGER.info("Fabric client entry point initialized");
     }
 
     /**

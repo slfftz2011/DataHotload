@@ -1,5 +1,6 @@
 package com.slfftz.datahotload.neoforge.client;
 
+import com.mojang.logging.LogUtils;
 import com.slfftz.datahotload.core.client.ClientEntryPoint;
 import com.slfftz.datahotload.core.common.api.ErrorAnalyzer;
 import com.slfftz.datahotload.core.common.api.GuiRenderer;
@@ -7,7 +8,6 @@ import com.slfftz.datahotload.core.common.network.DataHotloadPayload;
 import com.slfftz.datahotload.neoforge.network.NeoForgePayload;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Client-side entry point for DataHotload on NeoForge.
@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NeoForgeClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NeoForgeClient.class);
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     private static NeoForgeClient INSTANCE;
 

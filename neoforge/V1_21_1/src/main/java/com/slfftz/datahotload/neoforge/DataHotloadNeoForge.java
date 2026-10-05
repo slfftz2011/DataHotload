@@ -1,5 +1,6 @@
 package com.slfftz.datahotload.neoforge;
 
+import com.mojang.logging.LogUtils;
 import com.slfftz.datahotload.core.common.DataHotloadConstants;
 import com.slfftz.datahotload.core.server.ServerEntryPoint;
 import com.slfftz.datahotload.neoforge.server.NeoForgeDatapackReloader;
@@ -21,7 +22,6 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 
@@ -33,7 +33,7 @@ import java.nio.file.Path;
 @Mod("datahotload")
 public class DataHotloadNeoForge {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataHotloadNeoForge.class);
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     private MinecraftServer minecraftServer;
     private ServerEntryPoint<ServerPlayer> serverEntryPoint;
@@ -68,7 +68,7 @@ public class DataHotloadNeoForge {
         serverEntryPoint = new ServerEntryPoint<>(worldDir, reloader, networkHandler);
         serverEntryPoint.start();
 
-        LOGGER.info("[DataHotload] NeoForge server entry point initialized for world: " + worldDir);
+        LOGGER.info("[DataHotload] NeoForge server entry point initialized for world: {}", worldDir);
     }
 
     /**

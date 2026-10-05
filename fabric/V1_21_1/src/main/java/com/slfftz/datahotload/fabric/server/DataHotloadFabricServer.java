@@ -1,6 +1,7 @@
 package com.slfftz.datahotload.fabric.server;
 
 import com.slfftz.datahotload.core.server.ServerEntryPoint;
+import com.slfftz.datahotload.fabric.DataHotloadFabric;
 import com.slfftz.datahotload.fabric.network.FabricNetworkHandler;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -45,18 +46,17 @@ public class DataHotloadFabricServer implements DedicatedServerModInitializer {
             serverEntryPoint = new ServerEntryPoint<>(worldDir, reloader, networkHandler);
             serverEntryPoint.start();
 
-            System.out.println("[DataHotload] Fabric server entry point started, watching: "
-                    + worldDir.resolve("datapacks"));
+            DataHotloadFabric.LOGGER.info("Fabric server entry point started, watching: {}", worldDir.resolve("datapacks"));
         });
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             if (serverEntryPoint != null) {
                 serverEntryPoint.stop();
-                System.out.println("[DataHotload] Fabric server entry point stopped");
+                DataHotloadFabric.LOGGER.info("Fabric server entry point stopped");
             }
         });
 
-        System.out.println("[DataHotload] Fabric server entry point initialized");
+        DataHotloadFabric.LOGGER.info("Fabric server entry point initialized");
     }
 
     /**
@@ -80,7 +80,7 @@ public class DataHotloadFabricServer implements DedicatedServerModInitializer {
             try (java.nio.file.DirectoryStream<Path> ds = Files.newDirectoryStream(saves)) {
                 for (Path candidate : ds) {
                     if (Files.isDirectory(candidate) && Files.exists(candidate.resolve("level.dat"))) {
-                        System.out.println("[DataHotload] Resolved world dir from saves: " + candidate);
+                        DataHotloadFabric.LOGGER.info("Resolved world dir from saves: {}", candidate);
                         return candidate;
                     }
                 }
@@ -92,12 +92,12 @@ public class DataHotloadFabricServer implements DedicatedServerModInitializer {
         // 2) Fallback to run/world (dedicated server default)
         Path world = runDir.resolve("world");
         if (Files.exists(world) && Files.isDirectory(world)) {
-            System.out.println("[DataHotload] Resolved world dir: " + world);
+            DataHotloadFabric.LOGGER.info("Resolved world dir: {}", world);
             return world;
         }
 
         // 3) Final fallback: runDir itself
-        System.out.println("[DataHotload] Falling back to run directory as world dir: " + runDir);
+        DataHotloadFabric.LOGGER.info("Falling back to run directory as world dir: {}", runDir);
         return runDir;
     }
 }
